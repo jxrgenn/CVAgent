@@ -18,8 +18,8 @@ sys.stdout.reconfigure(encoding='utf-8')
 app = Flask(__name__)
 
 # Your credentials (be cautious with exposing this in production)
-EMAIL = "danociotr1@gmail.com"
-PASSWORD = "jurgen1964"
+EMAIL = "linkedinscraping1892@gmail.com"
+PASSWORD = "testing1234"
 
 # ChromeDriver path
 CHROMEDRIVER_PATH = r"C:\Users\Maçoku\Downloads\chromedriver-win64\chromedriver-win64\chromedriver.exe"
