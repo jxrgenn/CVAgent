@@ -1,0 +1,684 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "558f7c16-8db5-4fe4-a396-d8faf1987be6",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "http://localhost:3000",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "http://localhost:3000"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        -40
+      ],
+      "id": "de20d35b-b40f-4f60-a6fb-990b88f0dd72",
+      "name": "Webhook",
+      "webhookId": "558f7c16-8db5-4fe4-a396-d8faf1987be6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.affinda.com/v2/resumes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer aff_59e90e28104da44b5678b3b1248222de40799fc0"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "file"
+            },
+            {
+              "name": "workspace",
+              "value": "BEIhHfND"
+            },
+            {
+              "name": "wait",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        180,
+        300
+      ],
+      "id": "33b1b299-a7a0-4972-8b8d-d10602c4e1e5",
+      "name": "AFFINDA PDF Resume parser"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://1828-81-26-202-232.ngrok-free.app/scrape",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "candidate",
+              "value": "={{ $json}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 600000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        -180
+      ],
+      "id": "88c0ad03-52ad-4892-b789-cc8307798025",
+      "name": "Scrape Jobs Linkedin"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://moody-sloths-beg.loca.lt/scrape",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "bypass-tunnel-reminder",
+              "value": "1"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json[\"body\"][\"url\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        420,
+        -120
+      ],
+      "id": "8e1ba803-8903-4119-adce-5f24c9276e81",
+      "name": "Scrape Profile Linkedin",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCAoNJ3r6Mi2KQp1UCyPaMa0QxSviq5RRE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"text\": {{\n            JSON.stringify(\n              'You are an advanced job-matching assistant. Given a user\\'s professional profile and a list of job listings, analyze each job\\'s fit in detail. Return a structured JSON object for each match with:\\n\\n- `company_name`: Company offering the job\\n- `job_title`: The title of the position\\n- `match_rate`: A percentage score from 0–100 showing how well the candidate fits the role\\n- `match_breakdown`: A list of reasons *why* the candidate is a good fit. Each reason must be specific (e.g., “Candidate used React for 2 years at Company X”)\\n- `missing_requirements`: A list of requirements in the job that the candidate is missing or weak on\\n- `recommendations`: Advice to improve the candidate’s chance if they applied (e.g., “Learn Laravel basics” or “Tailor CV to highlight cloud projects”)\\n- `summary`: A 1–2 sentence summary of how well the candidate fits and whether they should apply\\n\\nReturn everything in a JSON array.\\n\\nUse clear, informative language that would make sense to a junior dev or job seeker.\\n\\nResume:\\n' + JSON.stringify($node[\"Get Final Scraping\"].json, null, 2) + '\\n\\nJobs:\\n' + JSON.stringify($node[\"If DONE\"].json, null, 2) )\n          }}\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"responseMimeType\": \"application/json\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1840,
+        300
+      ],
+      "id": "d217406f-b0f9-4a34-bc38-f57e10dd2abe",
+      "name": "Rank Jobs"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        920,
+        260
+      ],
+      "id": "7afeaf70-87a3-4d2e-a91d-af78dea21307",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCAoNJ3r6Mi2KQp1UCyPaMa0QxSviq5RRE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"text\": {{ \n            JSON.stringify(\n              'You are an advanced job-matching AI assistant. You will receive a resume in JSON format. Your task is to extract and return a fully structured JSON object with populated values based on that resume. DO NOT leave ANY fields!!! UNDERSTAND THE RESUME AND SEND BACK THE STRUCTURED json\\n\\nHere is the SAMPLE JSON structure you must return (ACTUALLY POPULATE THIS WITH CORRECT DATA FROM THE RESUME). Figure out if the candidate can work remote, on-site, hybrid. In the result you will return an array that lists all options that comply with the candidate. For the seniority field you will choose one of these options (internship, entry level, associate, mid-senior level, director, executive):\\n\\n```json\\n{\\n  \"name\": \"\",\\n  \"last_name\": \"\",\\n  \"location\": \"\",\\n  \"remote\": [],\\n  \"roles\": [],\\n  \"skills\": [],\\n  \"industries\": [],\\n  \"experience_keywords\": [],\\n  \"education_level\": \"\",\\n  \"years_of_experience\": 0,\\n  \"languages\": [],\\n  \"certifications\": [],\\n  \"seniority\": \"\"\\n}\\n```\\n\\nNow read the resume below and fill in each field accurately based on the user\\'s data. Respond ONLY with the JSON object — no extra text, no comments.\\n\\nResume:\\n' +\n              JSON.stringify(\n                $node[\"Merge\"].json ,\n                null,\n                2\n              )\n            )\n          }}\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"responseMimeType\": \"application/json\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        -180
+      ],
+      "id": "c0e05cb0-551c-418d-bcff-7f32a5ddc36f",
+      "name": "AI Analyze CV",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "=https://1828-81-26-202-232.ngrok-free.app/status/{{ $json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1580,
+        40
+      ],
+      "id": "e1498f8c-91c7-4886-a1cd-af43e0d7206f",
+      "name": "Get Final Scraping",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCAoNJ3r6Mi2KQp1UCyPaMa0QxSviq5RRE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"text\": {{\n            JSON.stringify(\n              'You are an advanced resume analysis AI. You will receive a resume in JSON format, parsed from a CV. Your task is to critically evaluate it and return a structured JSON object with improvement suggestions that can help the candidate stand out in job applications.\\n\\nReturn the result ONLY in the following JSON structure (and fill it with actual insights based on the provided resume):\\n\\n```json\\n{\\n  \"missing_sections\": [],\\n  \"weak_points\": [],\\n  \"recommendations\": [],\\n  \"summary\": \"\"\\n}\\n```\\n\\n- `missing_sections`: list of key resume sections that are missing or empty (e.g., \\\"Certifications\\\", \\\"Projects\\\", \\\"Languages\\\").\\n- `weak_points`: specific observations about sections that are weak, vague, outdated, or too short (e.g., \\\"Work experience lacks measurable results\\\", \\\"Education missing GPA\\\").\\n- `recommendations`: actionable advice to improve the resume (e.g., \\\"Add recent personal projects with GitHub links\\\", \\\"Include certifications relevant to cloud technologies\\\").\\n- `summary`: 1–2 sentence overview of the overall quality of the resume and whether it’s competitive.\\n\\nBe specific, concise, and clear. Avoid vague feedback.\\n\\nResume:\\n' +\n              JSON.stringify(\n                $node[\"Merge\"].json,\n                null,\n                2\n              )\n            )\n          }}\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"responseMimeType\": \"application/json\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        500
+      ],
+      "id": "275bbe2d-238d-4904-9807-1fe58106e896",
+      "name": "AI Generate Improvements"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://jxrgenendpoints.loca.lt/api/improvements",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.parse($json.candidates[0].content.parts[0].text) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2040,
+        560
+      ],
+      "id": "e66e3f48-51f2-49c1-bf82-93aba5cc91f6",
+      "name": "Post Improvements"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://jxrgenendpoints.loca.lt/api/jobrankings",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$('Rank Jobs').item.json.candidates[0].content.parts[0].text}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2180,
+        300
+      ],
+      "id": "5c9725f3-9872-453f-99ca-9412fdc64f0b",
+      "name": "Post Ranking"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5f7c7c66-5dd1-4e49-896e-77cc8ce0d0c7",
+              "leftValue": "={{ $json.body.url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        -40
+      ],
+      "id": "5923b14e-2654-47b2-85ac-64be0511b0e4",
+      "name": "If URL"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "19108f11-78f2-4a01-adcc-f280429e16cd",
+              "name": "id",
+              "value": "={{ $json.job_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1360,
+        20
+      ],
+      "id": "e7a29962-9d69-45da-bb02-7cee7a3f5c8a",
+      "name": "Get ID"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4b29cfe3-dd1b-4e8d-b929-02ccae171a94",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "done",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2080,
+        20
+      ],
+      "id": "d2854f29-711a-436e-873d-57af0c5fe6eb",
+      "name": "If DONE"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2700,
+        560
+      ],
+      "id": "4943a0be-0da9-466d-bf16-b2b0da81f4b2",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "amount": 25
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1800,
+        -80
+      ],
+      "id": "88454164-99a9-4af0-9426-ddcd084bc809",
+      "name": "Wait",
+      "webhookId": "299e6ec9-56f8-4a6d-8003-42d51587dba9"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCAoNJ3r6Mi2KQp1UCyPaMa0QxSviq5RRE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"text\": {{\n            JSON.stringify(\n              'You are an advanced JSON transformation assistant. You will receive a resume in JSON format under the \"data\" key. Your task is to deeply analyze this resume and transform it into a clean, fully populated, and richly detailed JSON array that matches the exact format below. **Do not paraphrase or shorten text** — use original wording from the input as much as possible. If a section (like work experience) includes skills or technologies, list them all in the description.\\n\\nYour goal is to make the output as complete and human-readable as possible, using every relevant sentence or phrase from the input resume.\\n\\n```json\\n[\\n  {\\n    \\\"name\\\": \\\"\\\",\\n    \\\"location\\\": \\\"\\\",\\n    \\\"about\\\": \\\"\\\",\\n    \\\"open_to_work\\\": false,\\n    \\\"interests\\\": [],\\n    \\\"accomplishments\\\": [],\\n    \\\"educations\\\": [\\n      {\\n        \\\"degree\\\": \\\"\\\",\\n        \\\"description\\\": \\\"\\\",\\n        \\\"from_date\\\": \\\"\\\",\\n        \\\"to_date\\\": \\\"\\\",\\n        \\\"institution_name\\\": \\\"\\\",\\n        \\\"linkedin_url\\\": \\\"\\\"\\n      }\\n    ],\\n    \\\"experiences\\\": [\\n      {\\n        \\\"position_title\\\": \\\"\\\",\\n        \\\"institution_name\\\": \\\"\\\",\\n        \\\"location\\\": \\\"\\\",\\n        \\\"description\\\": \\\"\\\",\\n        \\\"from_date\\\": \\\"\\\",\\n        \\\"to_date\\\": \\\"\\\",\\n        \\\"duration\\\": \\\"\\\",\\n        \\\"linkedin_url\\\": \\\"\\\"\\n      }\\n    ]\\n  }\\n]\\n```\\n\\n### Strict Rules:\\n- DO NOT paraphrase or summarize. Include all detail.\\n- Preserve all original descriptions and wording — be verbose.\\n- Reuse long-form descriptions in their entirety where possible.\\n- Include every certification, award, mention, and skill in `description`.\\n- Extract and format dates to `MMM YYYY`.\\n- If a LinkedIn URL is missing, leave it as an empty string.\\n- Return the entire result as one valid JSON array — no extra text.\\n- If some data is inferred or estimated (like duration), clearly format it, e.g., `\\\"2 years 3 months\\\"`.\\n\\nResume:\\n' +\n              JSON.stringify(\n                $('AFFINDA PDF Resume parser').item.json.data,\n                null,\n                2\n              )\n            )\n          }}\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"responseMimeType\": \"application/json\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        300
+      ],
+      "id": "d7e0612a-583d-4778-b319-31570f63970a",
+      "name": "Format Parsing"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the output from the previous (Gemini) node\nconst geminiOutput = $input.first().json;\n\n// Dig into the structure to find the text string\nconst jsonString = geminiOutput.candidates[0].content.parts[0].text;\n\n// Parse the string into a real JSON object and return it\n// This will become the output of this node\nreturn JSON.parse(jsonString);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        380
+      ],
+      "id": "b34a7643-eee1-4a52-b997-254a595e75a8",
+      "name": "Get Text"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the output from the previous (Gemini) node\nconst geminiOutput = $input.first().json;\n\n// Dig into the structure to find the text string\nconst jsonString = geminiOutput.candidates[0].content.parts[0].text;\n\n// Parse the string into a real JSON object and return it\n// This will become the output of this node\nreturn JSON.parse(jsonString);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        -320
+      ],
+      "id": "4ce2ddfc-dcbc-46bc-9d70-38afbdfec418",
+      "name": "Get Text1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://jxrgenendpoints.loca.lt/api/profiledata",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('Merge').item.json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        460
+      ],
+      "id": "7261ba6f-178b-4f1e-969b-b095e7000c5b",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AFFINDA PDF Resume parser": {
+      "main": [
+        [
+          {
+            "node": "Format Parsing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Profile Linkedin": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Jobs Linkedin": {
+      "main": [
+        [
+          {
+            "node": "Get ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Analyze CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rank Jobs": {
+      "main": [
+        [
+          {
+            "node": "Post Ranking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Analyze CV": {
+      "main": [
+        [
+          {
+            "node": "Get Text1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Final Scraping": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Generate Improvements": {
+      "main": [
+        [
+          {
+            "node": "Post Improvements",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Ranking": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If URL": {
+      "main": [
+        [
+          {
+            "node": "Scrape Profile Linkedin",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AFFINDA PDF Resume parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get ID": {
+      "main": [
+        [
+          {
+            "node": "Get Final Scraping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If DONE": {
+      "main": [
+        [
+          {
+            "node": "Get Final Scraping",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rank Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Improvements": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "If DONE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Parsing": {
+      "main": [
+        [
+          {
+            "node": "Get Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get Text1": {
+      "main": [
+        [
+          {
+            "node": "Scrape Jobs Linkedin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Generate Improvements",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "900b5f60-5e8e-46b8-8a17-dcc451cbe243",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "481f3c69cce44c1a138e6d5ac1b695d9dea36446d6047b10a758f6d3b58ed8e0"
+  },
+  "id": "uBz1LpCSC7PIJZ23",
+  "tags": []
+}
